@@ -45,12 +45,11 @@ const orangePoints = {
   "kanpei.png": 3,
 };
 
-function createOrange(x, y, sizeIndex) {
-
-  // 画像サイズに基づいて物理的な半径を調整
+function createOrange(x, y, sizeIndex, isStatic = false) {
   let radius = baseSize * scales[sizeIndex];
   let orange = Bodies.circle(x, y, radius, {
-    restitution: 0.9, // 弾力性
+    isStatic: isStatic,
+    restitution: 0.9,
     render: {
       sprite: {
         texture: images[sizeIndex],
@@ -60,8 +59,8 @@ function createOrange(x, y, sizeIndex) {
     },
   });
 
-  orange.sizeIndex = sizeIndex; // サイズインデックスをオレンジに追加
-  oranges.push(orange); // 配列に追加
+  orange.sizeIndex = sizeIndex;
+  oranges.push(orange);
   World.add(engine.world, orange);
 }
 
@@ -71,8 +70,7 @@ let gameOverLineY = gameOverHeight;
 console.log(gameOverLineY);
 
 // オレンジが生成される初期のy座標をゲームオーバーラインよりも低く設定
-const orangeSpawnY = 100
-
+const orangeSpawnY = 100;
 
 // ゲームオーバーの関数
 function gameOver() {
@@ -118,7 +116,7 @@ Matter.Events.on(engine, "beforeUpdate", function (event) {
 // ゲームオーバーラインとオレンジの出現位置の描画
 Matter.Events.on(render, "afterRender", function () {
   const context = render.context;
-  
+
   // ゲームオーバーラインの描画
   context.beginPath();
   context.moveTo(0, gameOverLineY);
@@ -136,17 +134,43 @@ Matter.Events.on(render, "afterRender", function () {
   context.stroke();
 });
 
+// ゲーム初期化時に待機するオレンジを作成
+function createInitialOrange() {
+  const x = render.options.width / 2; // キャンバスの中央
+  const sizeIndex = Math.floor(Math.random() * scales.length); // ランダムなサイズ
+  createOrange(x, orangeSpawnY, sizeIndex, true); // trueを追加してオレンジを静的にする
+}
+
+// 初期オレンジの静的状態を解除する関数
+function releaseOrange() {
+  if (oranges.length > 0) {
+    Body.setStatic(oranges[0], false); // 最初のオレンジを動的にする
+  }
+}
+
+// ゲーム開始時に中央にオレンジを配置して待機させる
+createInitialOrange();
+
 // マウスクリックでオレンジを生成
 render.canvas.addEventListener("mousedown", function (event) {
-  const mousePosition = {
-    x: event.clientX - render.canvas.getBoundingClientRect().left,
-    y: orangeSpawnY, // オレンジが生成されるy座標
-  };
+  // クリックした位置のx座標を取得
+  const mouseX = event.clientX - render.canvas.getBoundingClientRect().left;
 
-  const sizeIndex = Math.floor(Math.random() * scales.length); // scales.lengthを使用してランダムに選択
+  // まずは待機中のオレンジ（もしあれば）を動的に変更する
+  if (oranges.length > 0) {
+    const waitingOrange = oranges.find(orange => orange.isStatic); // 待機中のオレンジを検索
+    if (waitingOrange) {
+      // 待機中のオレンジの位置をクリックしたx座標に変更
+      Body.setPosition(waitingOrange, { x: mouseX, y: waitingOrange.position.y });
+      // オレンジを動的にする
+      Body.setStatic(waitingOrange, false);
+    }
+  }
 
-  createOrange(mousePosition.x, mousePosition.y, sizeIndex);
+  // 次に、新しいオレンジを生成して静的状態で待機させる
+  createOrange(render.options.width / 2, orangeSpawnY, Math.floor(Math.random() * scales.length), true);
 });
+
 
 // 衝突イベント
 Events.on(engine, "collisionStart", function (event) {
