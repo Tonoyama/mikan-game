@@ -121,15 +121,7 @@ Matter.Events.on(render, "afterRender", function () {
   context.beginPath();
   context.moveTo(0, gameOverLineY);
   context.lineTo(render.options.width, gameOverLineY);
-  context.strokeStyle = "#ff0000"; // 赤色でゲームオーバーラインを描画
-  context.lineWidth = 2;
-  context.stroke();
-
-  // オレンジの出現位置の描画
-  context.beginPath();
-  context.moveTo(0, orangeSpawnY);
-  context.lineTo(render.options.width, orangeSpawnY);
-  context.strokeStyle = "#ffa500"; // オレンジ色で出現位置の線を描画
+  context.strokeStyle = "#ffa500"; // 赤色でゲームオーバーラインを描画
   context.lineWidth = 2;
   context.stroke();
 });
@@ -171,6 +163,7 @@ render.canvas.addEventListener("mousedown", function (event) {
   createOrange(render.options.width / 2, orangeSpawnY, Math.floor(Math.random() * scales.length), true);
 });
 
+var ponSound = new Audio("pon.mp3");
 
 // 衝突イベント
 Events.on(engine, "collisionStart", function (event) {
@@ -198,6 +191,8 @@ Events.on(engine, "collisionStart", function (event) {
           oranges = oranges.filter(function (orange) {
             return orange !== bodyA && orange !== bodyB;
           });
+
+          ponSound.play();
 
           updateScore(orangePoints[images[sizeIndex]]);
           createOrange(newPosX, newPosY, newSizeIndex);
