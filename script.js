@@ -102,8 +102,8 @@ Matter.Events.on(engine, "beforeUpdate", function (event) {
         orange.timeout = now;
       }
 
-      // オレンジがゲームオーバーラインを超えてから3秒以上経過したかチェック
-      if (now - orange.timeout >= 3000) {
+      // オレンジがゲームオーバーラインを超えてから2秒以上経過したかチェック
+      if (now - orange.timeout >= 2000) {
         gameOver();
       }
     } else {
