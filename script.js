@@ -92,11 +92,25 @@ function restartGame() {
 
 // ゲームオーバーのチェックを行う関数
 Matter.Events.on(engine, "beforeUpdate", function (event) {
+  const now = Date.now();
+
   oranges.forEach(function (orange) {
     let radius = orange.circleRadius;
+
+    // オレンジの底部がゲームオーバーラインを超えたかチェック
     if (orange.position.y - radius < gameOverLineY) {
-      // オレンジの底部がゲームオーバーラインを超えたら
-      gameOver();
+      // オレンジにタイムアウトプロパティがなければ設定する
+      if (!orange.timeout) {
+        orange.timeout = now;
+      }
+
+      // オレンジがゲームオーバーラインを超えてから3秒以上経過したかチェック
+      if (now - orange.timeout >= 3000) {
+        gameOver();
+      }
+    } else {
+      // オレンジがゲームオーバーラインより下にあればタイムアウトをリセット
+      delete orange.timeout;
     }
   });
 });
