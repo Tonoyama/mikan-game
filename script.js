@@ -23,7 +23,8 @@ World.add(engine.world, [ground, leftWall, rightWall]);
 
 // オレンジオブジェクトの配列
 let oranges = [];
-
+// オレンジの基準サイズ（画像のピクセル半径に合わせて調整する）
+const baseSize = 40;
 const scales = [0.5, 0.7, 1];
 const images = ["setoka.png", "kiyomi.png", "kanpei.png"];
 
@@ -45,8 +46,6 @@ const orangePoints = {
 };
 
 function createOrange(x, y, sizeIndex) {
-  // オレンジの基準サイズ（画像のピクセル半径に合わせて調整する）
-  const baseSize = 40;
 
   // 画像サイズに基づいて物理的な半径を調整
   let radius = baseSize * scales[sizeIndex];
@@ -66,16 +65,13 @@ function createOrange(x, y, sizeIndex) {
   World.add(engine.world, orange);
 }
 
-// ゲームオーバーのラインの高さ。キャンバスの上からの距離。
-const gameOverHeight = 500;
-// オレンジが生成される初期のy座標。キャンバスの上部からの距離。
-const orangeSpawnY = 600;
+// ゲームオーバーラインの高さをキャンバスの上からの距離で修正
+const gameOverHeight = 50; // この値はゲームのデザインに応じて調整する
+let gameOverLineY = gameOverHeight;
+console.log(gameOverLineY);
 
-// ゲームオーバーラインがキャンバスの下部に近いほど値が大きく、オレンジの生成位置が上部に近いほど値が小さい。
-// 従って、ゲームオーバーラインの値がオレンジの生成位置の値よりも大きくないといけない。
-if (gameOverHeight >= orangeSpawnY) {
-  throw new Error("The orange spawn height must be below the game over height.");
-}
+// オレンジが生成される初期のy座標をゲームオーバーラインよりも低く設定
+const orangeSpawnY = 100
 
 
 // ゲームオーバーの関数
@@ -94,31 +90,36 @@ function restartGame() {
   window.location.reload();
 }
 
-Matter.Events.on(render, "afterRender", function () {
-  const context = render.context;
-  context.beginPath();
-  context.moveTo(0, render.options.height - gameOverHeight);
-  context.lineTo(render.options.width, render.options.height - gameOverHeight);
-  context.strokeStyle = "#ff0000"; // 赤色に設定
-  context.lineWidth = 2; // 線の幅を設定
-  context.stroke();
-});
-
-
-// エンジンの更新処理にゲームオーバーのチェックを追加
+// ゲームオーバーのチェックを行う関数
 Matter.Events.on(engine, "beforeUpdate", function (event) {
   oranges.forEach(function (orange) {
-    // オレンジの半径を取得
     let radius = orange.circleRadius;
-
-      // オレンジの底部が赤い線を超えたかをチェック（オレンジの中心位置 + 半径）
-      console.log(orange.position.y);
-      console.log(radius);
-      console.log(gameOverHeight);
-    if (orange.position.y + radius > gameOverHeight) {
+    if (orange.position.y - radius < gameOverLineY) {
+      // オレンジの底部がゲームオーバーラインを超えたら
       gameOver();
     }
   });
+});
+
+// ゲームオーバーラインとオレンジの出現位置の描画
+Matter.Events.on(render, "afterRender", function () {
+  const context = render.context;
+  
+  // ゲームオーバーラインの描画
+  context.beginPath();
+  context.moveTo(0, gameOverLineY);
+  context.lineTo(render.options.width, gameOverLineY);
+  context.strokeStyle = "#ff0000"; // 赤色でゲームオーバーラインを描画
+  context.lineWidth = 2;
+  context.stroke();
+
+  // オレンジの出現位置の描画
+  context.beginPath();
+  context.moveTo(0, orangeSpawnY);
+  context.lineTo(render.options.width, orangeSpawnY);
+  context.strokeStyle = "#ffa500"; // オレンジ色で出現位置の線を描画
+  context.lineWidth = 2;
+  context.stroke();
 });
 
 // マウスクリックでオレンジを生成
