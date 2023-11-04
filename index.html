@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>オレンジゲーム</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.14.2/matter.min.js"></script>
+  </head>
+  <body>
+    <div id="gameContainer">
+      <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <div id="scoreContainer">Score: <span id="score">0</span></div>
+
+    <div id="gameOverContainer">
+      <h1>ゲームオーバー!</h1>
+      <button onclick="restartGame()">リスタート</button>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
