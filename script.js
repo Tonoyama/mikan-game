@@ -1,6 +1,24 @@
 // Matter.jsの設定
 const { Engine, Render, World, Bodies, Body, Events } = Matter;
 
+// 定数と設定
+const CANVAS_WIDTH = 800; // キャンバス(箱)の幅
+const CANVAS_HEIGHT = 600; // キャンバス(箱)の高さ
+const GROUND_HEIGHT = 60; // 地面の高さ
+const WALL_THICKNESS = 60; // 壁の厚さ
+const BASE_SIZE = 40; // オレンジの基準サイズ（画像のピクセル半径に合わせて調整する）
+const ORANGE_SPAWN_Y = 100; // オレンジが生成される初期のy座標
+const GAME_OVER_HEIGHT = 50; // ゲームオーバーラインの高さ
+const ORANGE_TIMEOUT = 2000;
+const NEW_ORANGE_DELAY = 300;
+const scales = [0.5, 0.7, 1];
+const images = ["setoka.png", "kiyomi.png", "kanpei.png"];
+const orangePoints = {
+  "setoka.png": 1,
+  "kiyomi.png": 2,
+  "kanpei.png": 3,
+};
+
 // エンジンとレンダラーの作成
 const engine = Engine.create();
 const render = Render.create({
@@ -8,25 +26,38 @@ const render = Render.create({
   engine: engine,
   canvas: document.getElementById("gameCanvas"),
   options: {
-    width: 800,
-    height: 600,
+    width: CANVAS_WIDTH,
+    height: CANVAS_HEIGHT,
     wireframes: false, // 画像を使用する場合はfalseに設定
   },
 });
 
 // 地面と壁の追加
-const ground = Bodies.rectangle(400, 590, 810, 60, { isStatic: true });
-const leftWall = Bodies.rectangle(10, 300, 60, 600, { isStatic: true });
-const rightWall = Bodies.rectangle(790, 300, 60, 600, { isStatic: true });
-
+const ground = Bodies.rectangle(
+  CANVAS_WIDTH / 2,
+  CANVAS_HEIGHT - GROUND_HEIGHT / 2,
+  CANVAS_WIDTH + 10,
+  GROUND_HEIGHT,
+  { isStatic: true }
+);
+const leftWall = Bodies.rectangle(
+  WALL_THICKNESS / 2,
+  CANVAS_HEIGHT / 2,
+  WALL_THICKNESS,
+  CANVAS_HEIGHT,
+  { isStatic: true }
+);
+const rightWall = Bodies.rectangle(
+  CANVAS_WIDTH - WALL_THICKNESS / 2,
+  CANVAS_HEIGHT / 2,
+  WALL_THICKNESS,
+  CANVAS_HEIGHT,
+  { isStatic: true }
+);
 World.add(engine.world, [ground, leftWall, rightWall]);
 
 // オレンジオブジェクトの配列
 let oranges = [];
-// オレンジの基準サイズ（画像のピクセル半径に合わせて調整する）
-const baseSize = 40;
-const scales = [0.5, 0.7, 1];
-const images = ["setoka.png", "kiyomi.png", "kanpei.png"];
 
 // スコアの初期値
 let score = 0;
@@ -38,15 +69,8 @@ function updateScore(points) {
   document.getElementById("score").innerText = score;
 }
 
-// 各オレンジのポイント
-const orangePoints = {
-  "setoka.png": 1,
-  "kiyomi.png": 2,
-  "kanpei.png": 3,
-};
-
 function createOrange(x, y, sizeIndex, isStatic = false) {
-  let radius = baseSize * scales[sizeIndex];
+  let radius = BASE_SIZE * scales[sizeIndex];
   let orange = Bodies.circle(x, y, radius, {
     isStatic: isStatic,
     restitution: 0.7,
@@ -64,13 +88,7 @@ function createOrange(x, y, sizeIndex, isStatic = false) {
   World.add(engine.world, orange);
 }
 
-// ゲームオーバーラインの高さをキャンバスの上からの距離で修正
-const gameOverHeight = 50; // この値はゲームのデザインに応じて調整する
-let gameOverLineY = gameOverHeight;
-console.log(gameOverLineY);
-
-// オレンジが生成される初期のy座標をゲームオーバーラインよりも低く設定
-const orangeSpawnY = 100;
+let gameOverLineY = GAME_OVER_HEIGHT;
 
 // ゲームオーバーの関数
 function gameOver() {
@@ -130,7 +148,7 @@ Matter.Events.on(render, "afterRender", function () {
 function createInitialOrange() {
   const x = render.options.width / 2; // キャンバスの中央
   const sizeIndex = Math.floor(Math.random() * scales.length); // ランダムなサイズ
-  createOrange(x, orangeSpawnY, sizeIndex, true); // trueを追加してオレンジを静的にする
+  createOrange(x, ORANGE_SPAWN_Y, sizeIndex, true); // trueを追加してオレンジを静的にする
 }
 
 // 初期オレンジの静的状態を解除する関数
@@ -144,7 +162,10 @@ function releaseOrange() {
 createInitialOrange();
 
 // マウスクリックでオレンジを生成
+let lastOrangeCreationTime = 0;
+
 render.canvas.addEventListener("mousedown", function (event) {
+  const currentTime = Date.now();
   // 待機中のオレンジを解放する
   if (oranges.length > 0) {
     const waitingOrange = oranges.find((orange) => orange.isStatic);
@@ -158,18 +179,21 @@ render.canvas.addEventListener("mousedown", function (event) {
     }
   }
 
-  // 次のオレンジの生成は、現在のオレンジが一定の距離落下した後に行う
-  // setTimeoutを使用して、一定時間後に新しいオレンジを生成する
-  setTimeout(() => {
-    const nextOrangeX = render.options.width / 2; // 画面の中央
-    const nextOrangeY = orangeSpawnY; // 事前に定義されたY座標
-    createOrange(
-      nextOrangeX,
-      nextOrangeY,
-      Math.floor(Math.random() * scales.length),
-      true
-    );
-  }, 300); // 例えば0.5秒後に生成する
+  // 前回のオレンジ生成から十分な時間が経過していれば、新しいオレンジを生成する
+  if (currentTime - lastOrangeCreationTime >= NEW_ORANGE_DELAY) {
+    lastOrangeCreationTime = currentTime;
+
+    setTimeout(() => {
+      const nextOrangeX = render.options.width / 2; // 画面の中央
+      const nextOrangeY = ORANGE_SPAWN_Y; // 事前に定義されたY座標
+      createOrange(
+        nextOrangeX,
+        nextOrangeY,
+        Math.floor(Math.random() * scales.length),
+        true
+      );
+    }, NEW_ORANGE_DELAY);
+  }
 });
 
 var ponSound = new Audio("pon.mp3");
