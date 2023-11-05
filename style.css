@@ -1,5 +1,9 @@
 #gameCanvas {
-  border: 1px solid #000;
+  width: 100%;
+  height: auto;
+  max-width: 800px;
+  display: block;
+  margin: auto;
 }
 
 #scoreContainer {
