@@ -7,8 +7,8 @@ const CANVAS_HEIGHT = 600; // キャンバス(箱)の高さ
 const GROUND_HEIGHT = 60; // 地面の高さ
 const WALL_THICKNESS = 60; // 壁の厚さ
 const BASE_SIZE = 40; // オレンジの基準サイズ（画像のピクセル半径に合わせて調整する）
-const ORANGE_SPAWN_Y = 100; // オレンジが生成される初期のy座標
-const GAME_OVER_HEIGHT = 50; // ゲームオーバーラインの高さ
+const ORANGE_SPAWN_Y = 50; // オレンジが生成される初期のy座標
+const GAME_OVER_HEIGHT = 100; // ゲームオーバーラインの高さ
 const ORANGE_TIMEOUT = 2000;
 const NEW_ORANGE_DELAY = 300;
 const scales = [0.5, 0.7, 1];
@@ -113,19 +113,19 @@ Matter.Events.on(engine, "beforeUpdate", function (event) {
   oranges.forEach(function (orange) {
     let radius = orange.circleRadius;
 
-    // オレンジの底部がゲームオーバーラインを超えたかチェック
-    if (orange.position.y - radius < gameOverLineY) {
+    // オレンジが動的で、底部がゲームオーバーラインを超えたかチェック
+    if (!orange.isStatic && orange.position.y - radius < gameOverLineY) {
       // オレンジにタイムアウトプロパティがなければ設定する
       if (!orange.timeout) {
         orange.timeout = now;
       }
 
       // オレンジがゲームオーバーラインを超えてから2秒以上経過したかチェック
-      if (now - orange.timeout >= 2000) {
+      if (now - orange.timeout >= ORANGE_TIMEOUT) {
         gameOver();
       }
     } else {
-      // オレンジがゲームオーバーラインより下にあればタイムアウトをリセット
+      // オレンジが動的、またはゲームオーバーラインより下にあればタイムアウトをリセット
       delete orange.timeout;
     }
   });
