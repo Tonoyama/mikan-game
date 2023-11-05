@@ -49,7 +49,7 @@ function createOrange(x, y, sizeIndex, isStatic = false) {
   let radius = baseSize * scales[sizeIndex];
   let orange = Bodies.circle(x, y, radius, {
     isStatic: isStatic,
-    restitution: 0.9,
+    restitution: 0.7,
     render: {
       sprite: {
         texture: images[sizeIndex],
@@ -145,22 +145,31 @@ createInitialOrange();
 
 // マウスクリックでオレンジを生成
 render.canvas.addEventListener("mousedown", function (event) {
-  // クリックした位置のx座標を取得
-  const mouseX = event.clientX - render.canvas.getBoundingClientRect().left;
-
-  // まずは待機中のオレンジ（もしあれば）を動的に変更する
+  // 待機中のオレンジを解放する
   if (oranges.length > 0) {
-    const waitingOrange = oranges.find(orange => orange.isStatic); // 待機中のオレンジを検索
+    const waitingOrange = oranges.find((orange) => orange.isStatic);
     if (waitingOrange) {
-      // 待機中のオレンジの位置をクリックしたx座標に変更
-      Body.setPosition(waitingOrange, { x: mouseX, y: waitingOrange.position.y });
-      // オレンジを動的にする
+      // 解放されたオレンジの位置をクリックしたX座標に設定する
       Body.setStatic(waitingOrange, false);
+      Body.setPosition(waitingOrange, {
+        x: event.clientX - render.canvas.getBoundingClientRect().left,
+        y: waitingOrange.position.y,
+      });
     }
   }
 
-  // 次に、新しいオレンジを生成して静的状態で待機させる
-  createOrange(render.options.width / 2, orangeSpawnY, Math.floor(Math.random() * scales.length), true);
+  // 次のオレンジの生成は、現在のオレンジが一定の距離落下した後に行う
+  // setTimeoutを使用して、一定時間後に新しいオレンジを生成する
+  setTimeout(() => {
+    const nextOrangeX = render.options.width / 2; // 画面の中央
+    const nextOrangeY = orangeSpawnY; // 事前に定義されたY座標
+    createOrange(
+      nextOrangeX,
+      nextOrangeY,
+      Math.floor(Math.random() * scales.length),
+      true
+    );
+  }, 300); // 例えば0.5秒後に生成する
 });
 
 var ponSound = new Audio("pon.mp3");
@@ -171,31 +180,25 @@ Events.on(engine, "collisionStart", function (event) {
     const bodyA = pair.bodyA;
     const bodyB = pair.bodyB;
 
-    // オレンジ同士の衝突をチェック
     if (oranges.includes(bodyA) && oranges.includes(bodyB)) {
-      // 同じサイズのオレンジかどうかをチェック
+      // 同じサイズのオレンジが衝突した場合
       if (bodyA.sizeIndex === bodyB.sizeIndex) {
+        // サイズを一つ大きくする
         const sizeIndex = bodyA.sizeIndex;
-
-        // 最大サイズのオレンジには合体しないようにする
         if (sizeIndex < scales.length - 1) {
           const newSizeIndex = sizeIndex + 1; // 一つ大きいサイズ
           const newPosX = (bodyA.position.x + bodyB.position.x) / 2;
           const newPosY = (bodyA.position.y + bodyB.position.y) / 2;
 
-          // 既存のオレンジを取り除く
-          World.remove(engine.world, bodyA);
-          World.remove(engine.world, bodyB);
+          // 既存のオレンジを削除
+          oranges = oranges.filter(
+            (orange) => orange !== bodyA && orange !== bodyB
+          );
+          World.remove(engine.world, [bodyA, bodyB]);
 
-          // 配列からも取り除く
-          oranges = oranges.filter(function (orange) {
-            return orange !== bodyA && orange !== bodyB;
-          });
-
-          ponSound.play();
-
-          updateScore(orangePoints[images[sizeIndex]]);
+          // 新しいサイズのオレンジを生成
           createOrange(newPosX, newPosY, newSizeIndex);
+          updateScore(orangePoints[images[sizeIndex]]);
         }
       }
     }
