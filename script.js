@@ -223,6 +223,9 @@ Events.on(engine, "collisionStart", function (event) {
           // 新しいサイズのオレンジを生成
           createOrange(newPosX, newPosY, newSizeIndex);
           updateScore(orangePoints[images[sizeIndex]]);
+          
+          // 音を鳴らす
+          ponSound.play();
         }
       }
     }
