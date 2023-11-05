@@ -12,11 +12,15 @@ const GAME_OVER_HEIGHT = 100; // ゲームオーバーラインの高さ
 const ORANGE_TIMEOUT = 2000;
 const NEW_ORANGE_DELAY = 300;
 const scales = [0.5, 0.7, 1];
-const images = ["setoka.png", "kiyomi.png", "kanpei.png"];
+const images = [
+  "static/images/kanpei.png",
+  "static/images/kiyomi.png",
+  "static/images/kanpei.png",
+];
 const orangePoints = {
-  "setoka.png": 1,
-  "kiyomi.png": 2,
-  "kanpei.png": 3,
+  "static/images/setoka.png": 1,
+  "static/images/kiyomi.png": 2,
+  "static/images/kanpei.png": 3,
 };
 
 // エンジンとレンダラーの作成
@@ -196,7 +200,7 @@ render.canvas.addEventListener("mousedown", function (event) {
   }
 });
 
-var ponSound = new Audio("pon.mp3");
+var ponSound = new Audio("static/sound/pon.mp3");
 
 // 衝突イベント
 Events.on(engine, "collisionStart", function (event) {
