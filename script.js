@@ -70,7 +70,11 @@ updateScore(0);
 // スコアを表示するための関数
 function updateScore(points) {
   score += points;
-  document.getElementById("score").innerText = score;
+  // ゲームオーバー時の最終スコア表示を更新
+  document.getElementById("finalScore").innerText = score;
+  // ゲーム中のスコア表示を更新 (ゲーム画面内)
+  document.getElementById("scoreDisplay").innerText =
+    "獲得スコア: " + score + "点";
 }
 
 function createOrange(x, y, sizeIndex, isStatic = false) {
@@ -116,6 +120,8 @@ Matter.Events.on(engine, "beforeUpdate", function (event) {
 
   oranges.forEach(function (orange) {
     let radius = orange.circleRadius;
+
+    //document.getElementById("gameOverContainer").style.display = "block";
 
     // オレンジが動的で、底部がゲームオーバーラインを超えたかチェック
     if (!orange.isStatic && orange.position.y - radius < gameOverLineY) {
@@ -168,22 +174,32 @@ createInitialOrange();
 // マウスクリックでオレンジを生成
 let lastOrangeCreationTime = 0;
 
-render.canvas.addEventListener("mousedown", function (event) {
+function handleInteraction(clientX, clientY) {
   const currentTime = Date.now();
+  const canvasRect = render.canvas.getBoundingClientRect();
+
+  // キャンバスの実際のスケールを計算（CSSでの拡大縮小を考慮）
+  const scaleX = render.canvas.width / canvasRect.width;
+  const scaleY = render.canvas.height / canvasRect.height;
+
+  // 位置をスケールに合わせて調整
+  const relativeX = (clientX - canvasRect.left) * scaleX;
+  const relativeY = (clientY - canvasRect.top) * scaleY;
+
   // 待機中のオレンジを解放する
   if (oranges.length > 0) {
     const waitingOrange = oranges.find((orange) => orange.isStatic);
     if (waitingOrange) {
-      // 解放されたオレンジの位置をクリックしたX座標に設定する
+      // 解放されたオレンジの位置を設定する
       Body.setStatic(waitingOrange, false);
       Body.setPosition(waitingOrange, {
-        x: event.clientX - render.canvas.getBoundingClientRect().left,
+        x: relativeX,
         y: waitingOrange.position.y,
       });
     }
   }
 
-  // 前回のオレンジ生成から十分な時間が経過していれば、新しいオレンジを生成する
+  // 新しいオレンジを生成する
   if (currentTime - lastOrangeCreationTime >= NEW_ORANGE_DELAY) {
     lastOrangeCreationTime = currentTime;
 
@@ -198,6 +214,26 @@ render.canvas.addEventListener("mousedown", function (event) {
       );
     }, NEW_ORANGE_DELAY);
   }
+}
+
+render.canvas.addEventListener(
+  "touchstart",
+  function (event) {
+    // デフォルトのスクロールやズームを防ぐ
+    event.preventDefault();
+
+    // 最初のタッチイベントを取得
+    const touch = event.touches[0];
+
+    // 共通のインタラクション処理を呼び出す
+    handleInteraction(touch.clientX, touch.clientY);
+  },
+  { passive: false }
+);
+
+render.canvas.addEventListener("mousedown", function (event) {
+  // 共通のインタラクション処理を呼び出す
+  handleInteraction(event.clientX, event.clientY);
 });
 
 var ponSound = new Audio("static/sound/pon.mp3");
@@ -227,7 +263,7 @@ Events.on(engine, "collisionStart", function (event) {
           // 新しいサイズのオレンジを生成
           createOrange(newPosX, newPosY, newSizeIndex);
           updateScore(orangePoints[images[sizeIndex]]);
-          
+
           // 音を鳴らす
           ponSound.play();
         }
