@@ -11,7 +11,9 @@
   <body>
     <div id="gameContainer">
       <canvas id="gameCanvas"></canvas>
-      <div id="scoreDisplay" class="score-style text-2xl m-4 text-center">スコア:<span id="score">0</span>点</div>
+      <div id="scoreDisplay" class="score-style text-2xl m-4 text-center">
+        スコア:<span id="score">0</span>点
+      </div>
     </div>
 
     <div
@@ -19,11 +21,16 @@
       class="hidden fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full"
     >
       <div
-        class="relative top-1/4 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+        class="relative top-1/4 mx-auto p-5 border w-80 shadow-lg rounded-md bg-white"
       >
         <div id="gameOverMessage" class="text-center">
           <h3 class="text-2xl font-bold mb-6 text-black">ゲームオーバー</h3>
-          <div id="finalScoreDisplay" class="text-center mb-6 text-xl text-black">獲得スコア <span id="finalScore">0</span>点</div>
+          <div
+            id="finalScoreDisplay"
+            class="text-center mb-6 text-xl text-black"
+          >
+            獲得スコア <span id="finalScore">0</span>点
+          </div>
           <p class="text-black">もう1回遊びますか？</p>
           <button
             id="restartButton"

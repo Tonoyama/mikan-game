@@ -4,11 +4,19 @@ const { Engine, Render, World, Bodies, Body, Events } = Matter;
 // 定数と設定
 const CANVAS_WIDTH = 800; // キャンバス(箱)の幅
 const CANVAS_HEIGHT = 600; // キャンバス(箱)の高さ
-const GROUND_HEIGHT = 60; // 地面の高さ
+
+// GROUND_HEIGHT, ORANGE_SPAWN_Y, GAME_OVER_HEIGHT を相対値に変更します。
+const GROUND_HEIGHT_RATIO = 0.1; // 地面の高さをキャンバス高さの10%とする
+const ORANGE_SPAWN_Y_RATIO = 0.08; // スポーン位置をキャンバス高さの8%とする
+const GAME_OVER_HEIGHT_RATIO = 0.16; // ゲームオーバーラインの位置をキャンバス高さの16%とする
+
+// 相対値に基づいた具体的な数値を計算します。
+const GROUND_HEIGHT = CANVAS_HEIGHT * GROUND_HEIGHT_RATIO;
+const ORANGE_SPAWN_Y = CANVAS_HEIGHT * ORANGE_SPAWN_Y_RATIO;
+const GAME_OVER_HEIGHT = CANVAS_HEIGHT * GAME_OVER_HEIGHT_RATIO;
+
 const WALL_THICKNESS = 60; // 壁の厚さ
 const BASE_SIZE = 40; // オレンジの基準サイズ（画像のピクセル半径に合わせて調整する）
-const ORANGE_SPAWN_Y = 50; // オレンジが生成される初期のy座標
-const GAME_OVER_HEIGHT = 100; // ゲームオーバーラインの高さ
 const ORANGE_TIMEOUT = 2000;
 const NEW_ORANGE_DELAY = 300;
 const scales = [0.5, 0.7, 1];
@@ -139,7 +147,7 @@ Matter.Events.on(engine, "beforeUpdate", function (event) {
   oranges.forEach(function (orange) {
     let radius = orange.circleRadius;
 
-    //document.getElementById("gameOverContainer").style.display = "block";
+    // document.getElementById("gameOverContainer").style.display = "block";
 
     // オレンジが動的で、底部がゲームオーバーラインを超えたかチェック
     if (!orange.isStatic && orange.position.y - radius < gameOverLineY) {
