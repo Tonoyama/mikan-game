@@ -7,7 +7,6 @@ const CANVAS_WIDTH = 800; // キャンバス(箱)の幅
 const CANVAS_HEIGHT =
   window.innerWidth < 768 ? window.innerHeight * 1.5 : window.innerHeight * 0.75;
 
-// GROUND_HEIGHT, ORANGE_SPAWN_Y, GAME_OVER_HEIGHT を相対値に変更します。
 const GROUND_HEIGHT_RATIO = 0.03; // 地面の高さをキャンバス高さの10%とする
 const WALL_THICKNESS_RATIO = 0.03; // 壁の厚さ
 const ORANGE_SPAWN_Y_RATIO = 0.08; // スポーン位置をキャンバス高さの8%とする
@@ -21,16 +20,17 @@ const GAME_OVER_HEIGHT = CANVAS_HEIGHT * GAME_OVER_HEIGHT_RATIO;
 const BASE_SIZE = 40; // オレンジの基準サイズ（画像のピクセル半径に合わせて調整する）
 const ORANGE_TIMEOUT = 2000;
 const NEW_ORANGE_DELAY = 300;
+const IMAGE_PATH = "static/images/"; // 画像の共通パス
 const scales = [0.5, 0.7, 1];
 const images = [
-  "static/images/kanpei.png",
-  "static/images/kiyomi.png",
-  "static/images/kanpei.png",
+  `${IMAGE_PATH}kanpei.png`,
+  `${IMAGE_PATH}kiyomi.png`,
+  `${IMAGE_PATH}kanpei.png`,
 ];
 const orangePoints = {
-  "static/images/setoka.png": 1,
-  "static/images/kiyomi.png": 2,
-  "static/images/kanpei.png": 3,
+  [`${IMAGE_PATH}setoka.png`]: 1,
+  [`${IMAGE_PATH}kiyomi.png`]: 2,
+  [`${IMAGE_PATH}kanpei.png`]: 3,
 };
 
 // エンジンとレンダラーの作成
