@@ -42,22 +42,40 @@ const ground = Bodies.rectangle(
   CANVAS_HEIGHT - GROUND_HEIGHT / 2,
   CANVAS_WIDTH + 10,
   GROUND_HEIGHT,
-  { isStatic: true }
+  {
+    isStatic: true,
+    render: {
+      fillStyle: "#fed7aa", // 地面の色を茶色に変更
+    },
+  }
 );
+
 const leftWall = Bodies.rectangle(
   WALL_THICKNESS / 2,
   CANVAS_HEIGHT / 2,
   WALL_THICKNESS,
   CANVAS_HEIGHT,
-  { isStatic: true }
+  {
+    isStatic: true,
+    render: {
+      fillStyle: "#fed7aa", // 左の壁の色を灰色に変更
+    },
+  }
 );
+
 const rightWall = Bodies.rectangle(
   CANVAS_WIDTH - WALL_THICKNESS / 2,
   CANVAS_HEIGHT / 2,
   WALL_THICKNESS,
   CANVAS_HEIGHT,
-  { isStatic: true }
+  {
+    isStatic: true,
+    render: {
+      fillStyle: "#fed7aa", // 右の壁の色も灰色に変更
+    },
+  }
 );
+
 World.add(engine.world, [ground, leftWall, rightWall]);
 
 // オレンジオブジェクトの配列
