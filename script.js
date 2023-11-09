@@ -127,12 +127,12 @@ const leftWall = Bodies.rectangle(
 const rightWall = Bodies.rectangle(
   CANVAS_WIDTH,
   CANVAS_HEIGHT / 2,
-  1, // 厚さがない（実質的に0とする）
+  WALL_THICKNESS,
   CANVAS_HEIGHT,
   {
     isStatic: true,
     render: {
-      fillStyle: "#000000", // 右の壁の色
+      fillStyle: "#ffedd5", // 右の壁の色
     },
   }
 );
