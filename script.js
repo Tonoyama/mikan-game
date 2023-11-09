@@ -21,7 +21,7 @@ const GAME_OVER_HEIGHT = CANVAS_HEIGHT * GAME_OVER_HEIGHT_RATIO;
 
 const BASE_SIZE = 50; // オレンジの基準サイズ（画像のピクセル半径に合わせて調整する）
 const ORANGE_TIMEOUT = 2000;
-const NEW_ORANGE_DELAY = 300;
+const NEW_ORANGE_DELAY = 600;
 const IMAGE_PATH = "static/images/citrus/"; // かんきつの画像の共通パス
 const scales = [0.5, 0.8, 1.0, 1.3, 1.5, 1.8, 2, 2.5, 3, 3.3, 3.8];
 const weightedIndices = [0, 0, 1, 1, 2, 3, 4];
