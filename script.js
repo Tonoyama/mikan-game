@@ -17,20 +17,39 @@ const WALL_THICKNESS = CANVAS_HEIGHT * WALL_THICKNESS_RATIO;
 const ORANGE_SPAWN_Y = CANVAS_HEIGHT * ORANGE_SPAWN_Y_RATIO;
 const GAME_OVER_HEIGHT = CANVAS_HEIGHT * GAME_OVER_HEIGHT_RATIO;
 
-const BASE_SIZE = 40; // オレンジの基準サイズ（画像のピクセル半径に合わせて調整する）
+const BASE_SIZE = 50; // オレンジの基準サイズ（画像のピクセル半径に合わせて調整する）
 const ORANGE_TIMEOUT = 2000;
 const NEW_ORANGE_DELAY = 300;
 const IMAGE_PATH = "static/images/"; // 画像の共通パス
-const scales = [0.5, 0.7, 1];
+const scales = [0.5, 0.8, 1.0, 1.3, 1.6, 1.9, 2.2, 2.8, 3.1, 3.4, 4];
+const weightedIndices = [0, 0, 1, 1, 2, 3, 4, 5];
+const orangeSizeIndex =
+  weightedIndices[Math.floor(Math.random() * weightedIndices.length)];
 const images = [
   `${IMAGE_PATH}kanpei.png`,
   `${IMAGE_PATH}kiyomi.png`,
-  `${IMAGE_PATH}kanpei.png`,
+  `${IMAGE_PATH}iyokan.png`,
+  `${IMAGE_PATH}kashino28.png`,
+  `${IMAGE_PATH}natsumi.png`,
+  `${IMAGE_PATH}kawati.png`,
+  `${IMAGE_PATH}setoka.png`,
+  `${IMAGE_PATH}harehime.png`,
+  `${IMAGE_PATH}ponkan.png`,
+  `${IMAGE_PATH}siranui.png`,
+  `${IMAGE_PATH}unsyu.png`,
 ];
 const orangePoints = {
-  [`${IMAGE_PATH}setoka.png`]: 1,
-  [`${IMAGE_PATH}kiyomi.png`]: 2,
-  [`${IMAGE_PATH}kanpei.png`]: 3,
+  [`${IMAGE_PATH}kanpei.png`]: 1,
+  [`${IMAGE_PATH}kiyomi.png`]: 3,
+  [`${IMAGE_PATH}iyokan.png`]: 6,
+  [`${IMAGE_PATH}kashino28.png`]: 10,
+  [`${IMAGE_PATH}natsumi.png`]: 15,
+  [`${IMAGE_PATH}kawati.png`]: 21,
+  [`${IMAGE_PATH}setoka.png`]: 28,
+  [`${IMAGE_PATH}harehime.png`]: 36,
+  [`${IMAGE_PATH}ponkan.png`]: 45,
+  [`${IMAGE_PATH}siranui.png`]: 55,
+  [`${IMAGE_PATH}unsyu.png`]: 100,
 };
 
 // エンジンとレンダラーの作成
@@ -109,7 +128,7 @@ function createOrange(x, y, sizeIndex, isStatic = false) {
   let radius = BASE_SIZE * scales[sizeIndex];
   let orange = Bodies.circle(x, y, radius, {
     isStatic: isStatic,
-    restitution: 0.7,
+    restitution: 0.3,
     render: {
       sprite: {
         texture: images[sizeIndex],
@@ -185,7 +204,7 @@ Matter.Events.on(render, "afterRender", function () {
 // ゲーム初期化時に待機するオレンジを作成
 function createInitialOrange() {
   const x = render.options.width / 2; // キャンバスの中央
-  const sizeIndex = Math.floor(Math.random() * scales.length); // ランダムなサイズ
+  const sizeIndex = Math.floor(Math.random() * orangeSizeIndex); // ランダムなサイズ
   createOrange(x, ORANGE_SPAWN_Y, sizeIndex, true); // trueを追加してオレンジを静的にする
 }
 
@@ -237,7 +256,7 @@ function handleInteraction(clientX, clientY) {
       createOrange(
         nextOrangeX,
         nextOrangeY,
-        Math.floor(Math.random() * scales.length),
+        Math.floor(Math.random() * orangeSizeIndex),
         true
       );
     }, NEW_ORANGE_DELAY);
