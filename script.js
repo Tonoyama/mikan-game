@@ -21,12 +21,9 @@ const GAME_OVER_HEIGHT = CANVAS_HEIGHT * GAME_OVER_HEIGHT_RATIO;
 
 const BASE_SIZE = 50; // オレンジの基準サイズ（画像のピクセル半径に合わせて調整する）
 const ORANGE_TIMEOUT = 2000;
-const NEW_ORANGE_DELAY = 600;
+const NEW_ORANGE_DELAY = 300;
 const IMAGE_PATH = "static/images/citrus/"; // かんきつの画像の共通パス
 const scales = [0.5, 0.8, 1.0, 1.3, 1.5, 1.8, 2, 2.5, 3, 3.3, 3.8];
-const weightedIndices = [0, 0, 1, 1, 2, 3, 4];
-const orangeSizeIndex =
-  weightedIndices[Math.floor(Math.random() * weightedIndices.length)];
 const images = [
   `${IMAGE_PATH}kanpei.png`,
   `${IMAGE_PATH}kiyomi.png`,
@@ -169,6 +166,11 @@ function updateScore(points) {
     "獲得スコア: " + score + "点";
 }
 
+function getRandomSizeIndex() {
+  const weightedIndices = [0, 0, 1, 1, 2, 3, 4];
+  return weightedIndices[Math.floor(Math.random() * weightedIndices.length)];
+}
+
 let maxOrangeSizeIndex = 0; // 最大のオレンジサイズインデックスを追跡
 
 function createOrange(x, y, sizeIndex, isStatic = false) {
@@ -293,7 +295,7 @@ function updateCitrusNameDisplay(maxSizeIndex) {
 // ゲーム初期化時に待機するオレンジを作成
 function createInitialOrange() {
   const x = render.options.width / 2; // キャンバスの中央
-  const sizeIndex = Math.floor(Math.random() * orangeSizeIndex); // ランダムなサイズ
+  const sizeIndex = getRandomSizeIndex(); // ランダムなサイズ
   createOrange(x, ORANGE_SPAWN_Y, sizeIndex, true); // trueを追加してオレンジを静的にする
 }
 
@@ -342,12 +344,8 @@ function handleInteraction(clientX, clientY) {
     setTimeout(() => {
       const nextOrangeX = render.options.width / 2; // 画面の中央
       const nextOrangeY = ORANGE_SPAWN_Y; // 事前に定義されたY座標
-      createOrange(
-        nextOrangeX,
-        nextOrangeY,
-        Math.floor(Math.random() * orangeSizeIndex),
-        true
-      );
+      const sizeIndex = getRandomSizeIndex();
+      createOrange(nextOrangeX, nextOrangeY, sizeIndex, true);
     }, NEW_ORANGE_DELAY);
   }
 }
