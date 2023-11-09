@@ -5,10 +5,12 @@ const { Engine, Render, World, Bodies, Body, Events } = Matter;
 const CANVAS_WIDTH = 800; // キャンバス(箱)の幅
 // キャンバスの高さをブラウザの表示領域の3/4に設定
 const CANVAS_HEIGHT =
-  window.innerWidth < 768 ? window.innerHeight * 1.5 : window.innerHeight * 0.75;
+  window.innerWidth < 768
+    ? window.innerHeight * 1.5
+    : window.innerHeight * 0.75;
 
 const GROUND_HEIGHT_RATIO = 0.03; // 地面の高さをキャンバス高さの10%とする
-const WALL_THICKNESS_RATIO = 0.03; // 壁の厚さ
+const WALL_THICKNESS_RATIO = 0.04; // 壁の厚さ
 const ORANGE_SPAWN_Y_RATIO = 0.08; // スポーン位置をキャンバス高さの8%とする
 const GAME_OVER_HEIGHT_RATIO = 0.16; // ゲームオーバーラインの位置をキャンバス高さの16%とする
 
@@ -20,9 +22,9 @@ const GAME_OVER_HEIGHT = CANVAS_HEIGHT * GAME_OVER_HEIGHT_RATIO;
 const BASE_SIZE = 50; // オレンジの基準サイズ（画像のピクセル半径に合わせて調整する）
 const ORANGE_TIMEOUT = 2000;
 const NEW_ORANGE_DELAY = 300;
-const IMAGE_PATH = "static/images/"; // 画像の共通パス
-const scales = [0.5, 0.8, 1.0, 1.3, 1.6, 1.9, 2.2, 2.8, 3.1, 3.4, 4];
-const weightedIndices = [0, 0, 1, 1, 2, 3, 4, 5];
+const IMAGE_PATH = "static/images/citrus/"; // かんきつの画像の共通パス
+const scales = [0.5, 0.8, 1.0, 1.3, 1.5, 1.8, 2, 2.5, 3, 3.3, 3.8];
+const weightedIndices = [0, 0, 1, 1, 2, 3, 4];
 const orangeSizeIndex =
   weightedIndices[Math.floor(Math.random() * weightedIndices.length)];
 const images = [
@@ -52,6 +54,36 @@ const orangePoints = {
   [`${IMAGE_PATH}unsyu.png`]: 100,
 };
 
+const citrus_name = [
+  "甘平・愛媛Queenスプラッシュ",
+  "清見（きよみ）",
+  "伊予柑（いよかん）",
+  "愛媛果試第28号（紅まどんな）",
+  "カラ・南津海（なつみ）",
+  "河内晩柑（かわちばんかん）",
+  "せとか",
+  "はれひめ",
+  "ポンカン",
+  "不知火（しらぬい）",
+  "温州みかん",
+];
+
+const CITRUS_BAR_IMAGE_PATH = "static/images/citrus_bar/"; // かんきつバーの画像の共通パス
+
+const citrus_bar_images = [
+  `${CITRUS_BAR_IMAGE_PATH}1.png`,
+  `${CITRUS_BAR_IMAGE_PATH}2.png`,
+  `${CITRUS_BAR_IMAGE_PATH}3.png`,
+  `${CITRUS_BAR_IMAGE_PATH}4.png`,
+  `${CITRUS_BAR_IMAGE_PATH}5.png`,
+  `${CITRUS_BAR_IMAGE_PATH}6.png`,
+  `${CITRUS_BAR_IMAGE_PATH}7.png`,
+  `${CITRUS_BAR_IMAGE_PATH}8.png`,
+  `${CITRUS_BAR_IMAGE_PATH}9.png`,
+  `${CITRUS_BAR_IMAGE_PATH}10.png`,
+  `${CITRUS_BAR_IMAGE_PATH}11.png`,
+];
+
 // エンジンとレンダラーの作成
 const engine = Engine.create();
 const render = Render.create({
@@ -74,38 +106,51 @@ const ground = Bodies.rectangle(
   {
     isStatic: true,
     render: {
-      fillStyle: "#fed7aa", // 地面の色を茶色に変更
+      fillStyle: "#ffedd5", // 地面の色を茶色に変更
     },
   }
 );
 
 const leftWall = Bodies.rectangle(
-  WALL_THICKNESS / 2,
+  WALL_THICKNESS, // x位置を調整
   CANVAS_HEIGHT / 2,
-  WALL_THICKNESS,
+  WALL_THICKNESS * 2, // 壁の厚さを2倍に
   CANVAS_HEIGHT,
   {
     isStatic: true,
     render: {
-      fillStyle: "#fed7aa", // 左の壁の色を灰色に変更
+      fillStyle: "#ffedd5", // 左の壁の色
     },
   }
 );
 
 const rightWall = Bodies.rectangle(
-  CANVAS_WIDTH - WALL_THICKNESS / 2,
+  CANVAS_WIDTH,
   CANVAS_HEIGHT / 2,
-  WALL_THICKNESS,
+  1, // 厚さがない（実質的に0とする）
   CANVAS_HEIGHT,
   {
     isStatic: true,
     render: {
-      fillStyle: "#fed7aa", // 右の壁の色も灰色に変更
+      fillStyle: "#000000", // 右の壁の色
     },
   }
 );
 
 World.add(engine.world, [ground, leftWall, rightWall]);
+
+let loadedImages = [];
+
+function preloadImages() {
+  citrus_bar_images.forEach((imgUrl, index) => {
+    const image = new Image();
+    image.src = imgUrl;
+    loadedImages[index] = image;
+  });
+}
+
+// ゲーム初期化時に呼び出し
+preloadImages();
 
 // オレンジオブジェクトの配列
 let oranges = [];
@@ -124,6 +169,8 @@ function updateScore(points) {
     "獲得スコア: " + score + "点";
 }
 
+let maxOrangeSizeIndex = 0; // 最大のオレンジサイズインデックスを追跡
+
 function createOrange(x, y, sizeIndex, isStatic = false) {
   let radius = BASE_SIZE * scales[sizeIndex];
   let orange = Bodies.circle(x, y, radius, {
@@ -139,6 +186,12 @@ function createOrange(x, y, sizeIndex, isStatic = false) {
   });
 
   orange.sizeIndex = sizeIndex;
+
+  // 最大サイズインデックスの更新
+  if (sizeIndex > maxOrangeSizeIndex) {
+    maxOrangeSizeIndex = sizeIndex;
+  }
+
   oranges.push(orange);
   World.add(engine.world, orange);
 }
@@ -199,7 +252,43 @@ Matter.Events.on(render, "afterRender", function () {
   context.strokeStyle = "#ffa500"; // 赤色でゲームオーバーラインを描画
   context.lineWidth = 2;
   context.stroke();
+
+  // 最大のsizeIndexを持つオレンジを見つける
+  let maxSizeIndex = -1;
+  oranges.forEach((orange) => {
+    if (orange.sizeIndex > maxSizeIndex) {
+      maxSizeIndex = orange.sizeIndex;
+    }
+  });
+
+  updateCitrusNameDisplay(maxSizeIndex);
+
+  if (maxSizeIndex >= 0) {
+    const image = loadedImages[maxSizeIndex];
+
+    if (image && image.complete) {
+      // 画像の元のアスペクト比を維持しながら描画サイズを設定
+      const aspectRatio = image.width / image.height;
+      const drawHeight = BASE_SIZE * 11;
+      const drawWidth = drawHeight * aspectRatio;
+      const drawPosX = WALL_THICKNESS - drawWidth / 2;
+      const groundHeight = render.canvas.height;
+      const drawPosY = groundHeight - drawHeight - GROUND_HEIGHT;
+
+      context.drawImage(image, drawPosX, drawPosY, drawWidth, drawHeight);
+    }
+  }
 });
+
+// maxSizeIndex に基づいてテキストを更新する関数
+function updateCitrusNameDisplay(maxSizeIndex) {
+  const citrusNameDisplay = document.getElementById('citrusNameDisplay');
+  if (maxSizeIndex >= 0 && maxSizeIndex < citrus_name.length) {
+    citrusNameDisplay.textContent = citrus_name[maxSizeIndex] + "を収穫できた！";
+  } else {
+    citrusNameDisplay.textContent = '柑橘の名前';
+  }
+}
 
 // ゲーム初期化時に待機するオレンジを作成
 function createInitialOrange() {
