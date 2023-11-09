@@ -284,7 +284,7 @@ Matter.Events.on(render, "afterRender", function () {
 function updateCitrusNameDisplay(maxSizeIndex) {
   const citrusNameDisplay = document.getElementById('citrusNameDisplay');
   if (maxSizeIndex >= 0 && maxSizeIndex < citrus_name.length) {
-    citrusNameDisplay.textContent = citrus_name[maxSizeIndex] + "を収穫できた！";
+    citrusNameDisplay.textContent = citrus_name[maxSizeIndex] + "まで収穫できた！";
   } else {
     citrusNameDisplay.textContent = '柑橘の名前';
   }
